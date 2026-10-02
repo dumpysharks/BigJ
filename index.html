@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Japan 2027</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fafaf8;--ink:#1f2328;--mute:#6e7378;--line:#e3e3df;--acc:#c8372d;--chip:#fff}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--ink:#ececea;--mute:#9a9ea3;--line:#2e3033;--acc:#ff6b5e;--chip:#1f2023}}
+:root[data-theme="dark"]{--bg:#17181a;--ink:#ececea;--mute:#9a9ea3;--line:#2e3033;--acc:#ff6b5e;--chip:#1f2023}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+header{max-width:620px;margin:0 auto;padding:28px 18px 8px}
+header h1{margin:0;font-size:1.7rem;font-weight:700;letter-spacing:-.02em}
+header p{margin:2px 0 0;color:var(--mute);font-size:.9rem}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{max-width:620px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:10px 18px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;font:inherit;font-size:.82rem;font-weight:600;color:var(--mute);background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{max-width:620px;margin:0 auto;padding:22px 18px 48px}
+h2{margin:0;font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--mute);font-size:.88rem;margin:2px 0 14px}
+.stay{font-size:.85rem;padding:9px 12px;border-left:3px solid var(--acc);background:var(--chip);margin-bottom:6px}
+.act{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.t{font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums;padding-top:2px}
+.n{font-weight:600}
+.pri{color:var(--acc);font-size:.75rem;font-weight:600;margin-left:6px}
+.d{font-size:.88rem;color:var(--mute)}
+.loc{display:inline-block;margin-top:3px;font-size:.8rem;color:var(--acc);text-decoration:none}
+.loc:hover{text-decoration:underline}
+footer{max-width:620px;margin:0 auto;padding:0 18px 28px;color:var(--mute);font-size:.78rem}
+</style></head><body>
+<header><h1>Japan 2027</h1><p>Jan 22 – Feb 2 · Tokyo, Fuji, Kyoto, Osaka</p></header>
+<nav><div class="tabs" id="tabs" role="tablist"></div></nav>
+<main id="m"></main>
+<footer>Confirm 2027 hours and reservations before booking.</footer>
+<script>
+// [tab label, title, area, hotel, activities "time|name|note|map query"]  (* = priority)
+const D=[
+["Jan 22","Tokyo arrival","Tokyo","Hotel Gracery Tokyo Tamachi · ~$66",[
+"4:00 PM|Land at Narita|Immigration, customs, luggage|Narita Airport",
+"~7:00 PM|Check in, Tamachi|Shower & rest|Hotel Gracery Tokyo Tamachi",
+"~8:00 PM|Dinner, Tamachi/Shimbashi|Nothing else scheduled|Shimbashi Station"]],
+["Jan 23","To Yamanakako","Yamanakako","Guest House Zen · ~$95",[
+"7:00 AM|Breakfast & check out|Then Tokyo → Yamanakako|Tokyo",
+"~12:30 PM|Arrive Hirano, drop luggage|Guest House Zen|Guest House Zen Yamanakako",
+"1:00 PM|Hirano Beach|Lake Yamanaka, Fuji photos|Hirano Beach Lake Yamanaka",
+"2:00 PM|Nagaike Water Park|Lakeside walk|Nagaike Water Park Yamanakako",
+"3:30 PM|Fuji viewing & sunset|Sunset photography|Lake Yamanaka Mount Fuji view",
+"~5:00 PM|Optional private onsen|Only if tattoo-friendly access confirmed|Yamanakako onsen",
+"7:00 PM|Dinner, then relax|Sleep ~9:30 PM|Yamanakako restaurant"]],
+["Jan 24","Fuji → Kyoto","Kawaguchiko","Evening: Kyoto hotel check-in",[
+"5:30 AM|Fuji sunrise|Lake Yamanaka photography|Lake Yamanaka",
+"7:00 AM|Breakfast & check out|8:30 AM out|Yamanakako",
+"~10:00 AM|Kawaguchiko, store luggage|Station lockers|Kawaguchiko Station",
+"10:30 AM|Oishi Park|Lake Kawaguchi, Fuji views|Oishi Park Kawaguchiko",
+"1:00 PM|Mt. Fuji Panoramic Ropeway|Only if Fuji is visible|Kachi Kachi Ropeway",
+"~3:30 PM|Kawaguchiko → Kyoto|Dinner & relax in Kyoto|Kyoto Station"]],
+["Jan 25","Traditional Kyoto + handmade day","Kyoto","",[
+"7:00 AM|Fushimi Inari|Torii gates, early walk|Fushimi Inari Taisha",
+"9:30 AM|Kiyomizu-dera|Then Sannenzaka & Ninenzaka|Kiyomizu-dera",
+"~11:15 AM|Glänta|Custom ring/jewelry, allow 60–90 min|Glänta Kyoto",
+"~1:00 PM|KICHI KICHI omu-rice *|Priority reservation|Kichi Kichi Kyoto",
+"~2:30 PM|Yasaka Shrine & Maruyama Park|Stroll|Yasaka Shrine",
+"3:30 PM|Gion, Hanamikoji|Geisha district|Hanamikoji Street Gion",
+"4:30 PM|Hayakawa Hamonoten|Knives, browse quickly|Hayakawa Hamonoten Kyoto",
+"5:30 PM|Pontocho & Kamo River|Dinner/snacks, Gion night photos|Pontocho Kyoto"]],
+["Jan 26","Arashiyama + Miffy + gyukatsu","Kyoto","",[
+"8:30 AM|Bamboo Grove|Go before crowds|Arashiyama Bamboo Grove",
+"9:15 AM|Tenryu-ji|Garden|Tenryu-ji",
+"10:15 AM|Togetsukyo Bridge|Katsura River|Togetsukyo Bridge",
+"11:00 AM|Miffy Sakura Kitchen|Goods, café, photos|Miffy Sakura Kitchen Arashiyama",
+"1:00 PM|Monkey Park (or Kinkaku-ji)|Pick one; monkeys > another temple|Iwatayama Monkey Park",
+"3:30 PM|Gyukatsu|Late lunch|Gyukatsu Kyoto",
+"5:00 PM|Kyoto shopping|Shopping|Shijo Kawaramachi Kyoto",
+"6:30 PM|Kyoto Station Ramen Alley|Pick one shop, then station architecture|Kyoto Ramen Koji"]],
+["Jan 27","Nara → Osaka","Osaka","Orange Hotel · ~$60 / 2 nights",[
+"~9:00 AM|Nara Park|Feed the deer|Nara Park",
+"9:45 AM|Todai-ji|Great Buddha|Todai-ji",
+"11:00 AM|Kasuga Taisha|Forested approach|Kasuga Taisha",
+"12:30 PM|Nakatanidou|Mochi pounding, yomogi mochi|Nakatanidou Nara",
+"~2:30 PM|Osaka, drop luggage|Orange Hotel|Orange Hotel Osaka",
+"3:00 PM|Shinsekai & Tsutenkaku|Retro streets|Tsutenkaku",
+"4:00 PM|Den Den Town|Anime, games, collectibles|Den Den Town Osaka",
+"5:00 PM|Factory Gear Namba|Only if you're into it|Factory Gear Namba",
+"6:00 PM|Kushikatsu|Shinsekai|Kushikatsu Daruma Shinsekai",
+"7:00 PM|Dotonbori|Glico sign, takoyaki, okonomiyaki|Dotonbori",
+"9:00 PM|Shinsaibashi & Amerikamura|Back by 10 PM|Amerikamura Osaka"]],
+["Jan 28","Universal Studios","Osaka","Full USJ day",[
+"~6:30 AM|Leave for USJ|Arrive before opening|Universal Studios Japan",
+"All day|Super Nintendo World|Mario Kart, Yoshi|Super Nintendo World Osaka",
+"All day|Harry Potter & major rides|Shows, seasonal attractions|Wizarding World Universal Studios Japan",
+"Evening|USJ-exclusive food|Stay for night; back ~9 PM|Universal Studios Japan"]],
+["Jan 29","Osaka → Shinjuku","Shinjuku","APA Hotel Higashi Shinjuku Kabukicho Tower · ~$329 / 4 nights",[
+"~10:00 AM|Shinkansen Shin-Osaka → Tokyo|Check out first|Shin-Osaka Station",
+"~1:30 PM|Shinjuku, hotel/luggage|APA Hotel|APA Hotel Higashi Shinjuku Kabukicho Tower",
+"4:30 PM|Tokyo Metropolitan Government Building|Free views|Tokyo Metropolitan Government Building",
+"6:00 PM|Yakitori/izakaya & Omoide Yokocho|Memory Lane|Omoide Yokocho",
+"8:30 PM|Kabukicho & Don Quijote|Hotel ~10 PM|Kabukicho"]],
+["Jan 30","Nerd day","Tokyo","Max character shopping day",[
+"~9:00 AM|Tokyo Skytree|Skytree Town|Tokyo Skytree",
+"~10:00 AM|Kirby Café|Food & merch|Kirby Cafe Tokyo Skytree Town",
+"12:30 PM|Ameyoko|Street food, bargains|Ameyoko",
+"1:00 PM|Niki no Kashi|Candy & souvenirs|Niki no Kashi Ueno",
+"2:00 PM|Akihabara|Animate, AmiAmi, Mandarake, retro PS1, arcades|Akihabara",
+"~4:00 PM|Pokémon Café|Reservation|Pokemon Cafe Nihonbashi",
+"~5:30 PM|Pokémon Center DX & Character Street|Tokyo Station area|Pokemon Center Tokyo DX",
+"7:30 PM|Conveyor-belt sushi|Back to Shinjuku ~9 PM|Conveyor belt sushi Tokyo"]],
+["Jan 31","DisneySea","Tokyo","Entire day at DisneySea",[
+"~8:00 AM|Arrive Tokyo DisneySea|Leave Shinjuku ~7 AM|Tokyo DisneySea",
+"Opening|Fantasy Springs & Soaring|Top priorities|Fantasy Springs Tokyo DisneySea",
+"Day|Journey to Center of Earth, Tower of Terror|American Waterfront, Arabian Coast, Mermaid Lagoon|Tokyo DisneySea",
+"Day|DisneySea food|Gyoza Dog, Ukiwa bun, Little Green Men mochi|Tokyo DisneySea",
+"Evening|Night entertainment|Leave ~9 PM, hotel ~10 PM|Tokyo DisneySea"]],
+["Feb 1","Snoopy + Shibuya","Tokyo","Shopping, design & omakase",[
+"10:00 AM|Snoopy Museum Tokyo|Exhibits & shop|Snoopy Museum Tokyo",
+"11:30 AM|Grandberry Park|Snack/coffee|Grandberry Park Machida",
+"~1:00 PM|white atelier BY CONVERSE|Customize sneakers, ~1 hr+|white atelier BY CONVERSE Harajuku",
+"2:45 PM|Meiji Jingu|After a quick lunch|Meiji Jingu",
+"3:30 PM|Harajuku|Takeshita St, Cat St, thrift, Sanrio, Miffy, LIBERTY WALK|Takeshita Street",
+"5:00 PM|Shibuya|Crossing, PARCO, Pokémon Center, Nintendo, Loft|Shibuya Crossing",
+"7:00 PM|Omakase dinner *|Special Tokyo dinner|Omakase Shibuya",
+"9:00 PM|Final Shinjuku shopping|JINS, Don Quijote, souvenirs|JINS Shinjuku"]],
+["Feb 2","Fly home","Narita","Check out 12:00 PM",[
+"9:00 AM|Last Shinjuku shopping|Snacks, souvenirs|Shinjuku Station",
+"12:30 PM|Early lunch|After check out|Shinjuku Station",
+"1:30 PM|Head to Narita|Arrive ~3:30–4 PM|Narita Airport",
+"6:30 PM|Flight home|Safe travels!|Narita Airport"]]];
+
+const tabs=document.getElementById("tabs"),m=document.getElementById("m");
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function show(i){
+ const d=D[i];
+ [...tabs.children].forEach((b,j)=>b.setAttribute("aria-selected",j===i));
+ const acts=d[4].map(a=>{
+  const [t,n,note,q]=a.split("|"),star=n.includes("*");
+  const url="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q);
+  return `<div class="act"><div class="t">${esc(t)}</div><div><div class="n">${esc(n.replace(" *","").replace("*",""))}${star?'<span class="pri">Priority</span>':""}</div><div class="d">${esc(note)}</div><a class="loc" href="${url}" target="_blank" rel="noopener">${esc(q)}</a></div></div>`}).join("");
+ m.innerHTML=`<h2>${d[0]}: ${esc(d[1])}</h2><div class="sub">${esc(d[2])}</div>${d[3]?`<div class="stay">${esc(d[3])}</div>`:""}${acts}`;
+ window.scrollTo({top:0});
+ try{localStorage.setItem("jp-day",i)}catch(e){}
+}
+D.forEach((d,i)=>{const b=document.createElement("button");b.textContent=d[0];b.setAttribute("role","tab");b.onclick=()=>show(i);tabs.appendChild(b)});
+let s=0;try{s=+localStorage.getItem("jp-day")||0}catch(e){}
+show(s<D.length?s:0);
+
+</script></body></html>
